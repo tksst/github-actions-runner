@@ -168,4 +168,4 @@ _EOFEOF_
 
 WORKDIR /actions-runner
 
-ENTRYPOINT [ "dash", "/init.sh" ]
+ENTRYPOINT [ "/init.sh" ]

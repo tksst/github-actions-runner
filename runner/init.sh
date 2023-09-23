@@ -3,7 +3,7 @@
 set -e
 set -u
 
-./config.sh  --unattended --name "$( date '+%Y%m%dT%H%M%S%z' )" "$@"
+./config.sh  --unattended --name "$( hostname )-$( date '+%Y%m%dT%H%M%S%z' )" "$@"
 
 # get token from "--token XXXX"
 while [ $# -gt 0 ]; do

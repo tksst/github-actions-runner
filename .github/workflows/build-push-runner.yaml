@@ -1,0 +1,21 @@
+name: build and push devcontainer-base
+
+on:
+  push:
+    paths:
+      - "runner/**"
+  pull_request:
+    paths:
+      - "runner/**"
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    name: Build and Push github-actions-runner
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/build-push.yaml
+    with:
+      image-name: github-actions-runner
+      context-directory: runner

@@ -108,15 +108,35 @@ RUN \
 _EOFEOF_
 
 ################################
-# Android Command-line tools
+# OpenJDK
 ################################
-
-ENV ANDROID_ROOT /usr/local/lib/android
-ENV ANDROID_SDK_ROOT ${ANDROID_ROOT}/sdk
 
 RUN \
   --mount=type=cache,target=/var/lib/apt/lists \
   --mount=type=cache,target=/var/cache/apt \
+  <<_EOFEOF_
+#!/bin/bash
+    set -eu
+    set -o pipefail
+    set -o posix
+
+    apt-get update
+    apt-get install -y --no-install-recommends openjdk-11-jdk-headless
+    
+_EOFEOF_
+
+COPY ./init.sh /init.sh
+
+USER user
+
+################################
+# Android Command-line tools
+################################
+
+ENV ANDROID_SDK_ROOT /home/user/android-sdk
+ENV ANDROID_HOME ${ANDROID_SDK_ROOT}
+
+RUN \
   --mount=type=tmpfs,target=/tmp/tmp/ \
   <<_EOFEOF_
 #!/bin/bash
@@ -127,7 +147,7 @@ RUN \
     tool_json=/tmp/tmp/toolset-2204.json
     tmp_cmdline_tools=/tmp/tmp/cmdline-tools.zip
 
-    curl -L https://github.com/actions/runner-images/raw/0ac9d155ab63dfebe079716d8aa343348fec34b5/images/linux/toolsets/toolset-2204.json -o "$tool_json"
+    curl -fsSL https://github.com/actions/runner-images/raw/0ac9d155ab63dfebe079716d8aa343348fec34b5/images/linux/toolsets/toolset-2204.json -o "$tool_json"
 
     cmdlineToolsVersion=$( jq -r '.android."cmdline-tools"' < "$tool_json" )
 
@@ -139,12 +159,13 @@ RUN \
 
     # Command line tools need to be placed in ${ANDROID_SDK_ROOT}/sdk/cmdline-tools/latest to determine SDK root
     mv "${ANDROID_SDK_ROOT}/cmdline-tools/cmdline-tools" "${ANDROID_SDK_ROOT}/cmdline-tools/latest"
+
+    set +o pipefail
+    yes | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --licenses
+    set -o pipefail
     
 _EOFEOF_
 
-COPY ./init.sh /init.sh
-
-USER user
 WORKDIR /actions-runner
 
 ENTRYPOINT [ "dash", "/init.sh" ]

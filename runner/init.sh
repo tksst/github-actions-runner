@@ -41,6 +41,9 @@ fi
 
 TOKEN=$( get_token "$TOKEN_FILE" )
 
+# Remove a configuration in case of failure to terminate successfully.
+./config.sh remove --token "${TOKEN}"
+
 ./config.sh  --unattended --name "${NAME_PREFIX:-}${NAME_PREFIX:+-}$( hostname )-$( date '+%Y%m%dT%H%M%S%z' )" --token "$TOKEN" --url "$url_for_configsh" "$@"
 
 # dash needs this to run the EXIT handler when it receives SIGTERM/INT/HUP.

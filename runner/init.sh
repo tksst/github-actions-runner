@@ -41,7 +41,7 @@ fi
 
 TOKEN=$( get_token "$TOKEN_FILE" )
 
-./config.sh  --unattended --name "$( hostname )-$( date '+%Y%m%dT%H%M%S%z' )" --token "$TOKEN" --url "$url_for_configsh" "$@"
+./config.sh  --unattended --name "${NAME_PREFIX:-}${NAME_PREFIX:+-}$( hostname )-$( date '+%Y%m%dT%H%M%S%z' )" --token "$TOKEN" --url "$url_for_configsh" "$@"
 
 # dash needs this to run the EXIT handler when it receives SIGTERM/INT/HUP.
 trap 'echo "init.sh: Received signal, terminating the runner"; kill -TERM $pid' INT TERM HUP

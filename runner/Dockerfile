@@ -125,8 +125,6 @@ RUN \
     
 _EOFEOF_
 
-COPY ./init.sh /init.sh
-
 USER user
 
 ################################
@@ -165,6 +163,8 @@ RUN \
     set -o pipefail
     
 _EOFEOF_
+
+COPY ./init.sh /init.sh
 
 WORKDIR /actions-runner
 

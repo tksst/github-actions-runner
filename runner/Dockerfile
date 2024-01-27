@@ -24,7 +24,7 @@ RUN \
 
     mkdir /actions-runner
     cd /actions-runner
-    curl -L https://github.com/actions/runner/releases/download/v2.311.0/actions-runner-linux-x64-2.311.0.tar.gz | tar -xzf -
+    curl -L https://github.com/actions/runner/releases/download/v2.312.0/actions-runner-linux-x64-2.312.0.tar.gz | tar -xzf -
 
     ./bin/installdependencies.sh
 

@@ -100,7 +100,7 @@ RUN \
     tool_json=/tmp/tmp/toolset-2204.json
     n=/tmp/tmp/n
 
-    curl -L https://github.com/actions/runner-images/raw/0ac9d155ab63dfebe079716d8aa343348fec34b5/images/linux/toolsets/toolset-2204.json -o "$tool_json"
+    curl -L https://raw.githubusercontent.com/actions/runner-images/807eb76cfcfc7cf7c9a49b0dcd4cf699055f5393/images/ubuntu/toolsets/toolset-2204.json -o "$tool_json"
     
     curl -fsSL https://raw.githubusercontent.com/tj/n/master/bin/n -o "$n"
     bash "$n" $( jq -r '.node.default' < "$tool_json" )
@@ -145,7 +145,7 @@ RUN \
     tool_json=/tmp/tmp/toolset-2204.json
     tmp_cmdline_tools=/tmp/tmp/cmdline-tools.zip
 
-    curl -fsSL https://github.com/actions/runner-images/raw/0ac9d155ab63dfebe079716d8aa343348fec34b5/images/linux/toolsets/toolset-2204.json -o "$tool_json"
+    curl -fsSL https://raw.githubusercontent.com/actions/runner-images/807eb76cfcfc7cf7c9a49b0dcd4cf699055f5393/images/ubuntu/toolsets/toolset-2204.json -o "$tool_json"
 
     cmdlineToolsVersion=$( jq -r '.android."cmdline-tools"' < "$tool_json" )
 

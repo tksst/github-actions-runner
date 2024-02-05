@@ -32,6 +32,8 @@ RUN \
 
 _EOFEOF_
 
+ARG TOOLSET_JSON_URL=https://github.com/actions/runner-images/raw/33875804693d2c58977c82f70dcb7a10dafad9d7/images/ubuntu/toolsets/toolset-2204.json
+
 RUN \
   --mount=type=cache,target=/var/lib/apt/lists \
   --mount=type=cache,target=/var/cache/apt \
@@ -47,12 +49,12 @@ RUN \
     apt-get update
     apt-get install -y software-properties-common jq unzip
 
-    curl -fsSL https://github.com/actions/runner-images/raw/0ac9d155ab63dfebe079716d8aa343348fec34b5/images/linux/toolsets/toolset-2204.json > "$tool_json"
+    curl -fsSL "$TOOLSET_JSON_URL" > "$tool_json"
 
     export DEBIAN_FRONTEND=noninteractive
 
-    # https://github.com/actions/runner-images/blob/0ac9d155ab63dfebe079716d8aa343348fec34b5/images/linux/scripts/installers/apt-common.sh
-    # https://github.com/actions/runner-images/blob/0ac9d155ab63dfebe079716d8aa343348fec34b5/images/linux/scripts/installers/apt-vital.sh
+    # https://github.com/actions/runner-images/blob/5d40b1e2130ee3081ebf2a5f0b75854e3a4aff2e/images/ubuntu/scripts/build/apt-common.sh
+    # https://github.com/actions/runner-images/blob/1bd9214f41fdc2aa56e86e0b4043e4364fa51497/images/ubuntu/scripts/build/install-apt-vital.sh
 
     jq '.apt.common_packages[]' < "$tool_json" | xargs apt-get install -y --no-install-recommends
     jq '.apt.cmd_packages[]' < "$tool_json" | xargs apt-get install -y --no-install-recommends
@@ -100,7 +102,7 @@ RUN \
     tool_json=/tmp/tmp/toolset-2204.json
     n=/tmp/tmp/n
 
-    curl -L https://raw.githubusercontent.com/actions/runner-images/807eb76cfcfc7cf7c9a49b0dcd4cf699055f5393/images/ubuntu/toolsets/toolset-2204.json -o "$tool_json"
+    curl -L "$TOOLSET_JSON_URL" -o "$tool_json"
     
     curl -fsSL https://raw.githubusercontent.com/tj/n/master/bin/n -o "$n"
     bash "$n" $( jq -r '.node.default' < "$tool_json" )
@@ -145,7 +147,7 @@ RUN \
     tool_json=/tmp/tmp/toolset-2204.json
     tmp_cmdline_tools=/tmp/tmp/cmdline-tools.zip
 
-    curl -fsSL https://raw.githubusercontent.com/actions/runner-images/807eb76cfcfc7cf7c9a49b0dcd4cf699055f5393/images/ubuntu/toolsets/toolset-2204.json -o "$tool_json"
+    curl -fsSL "$TOOLSET_JSON_URL" -o "$tool_json"
 
     cmdlineToolsVersion=$( jq -r '.android."cmdline-tools"' < "$tool_json" )
 

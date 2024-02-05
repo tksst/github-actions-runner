@@ -2,8 +2,8 @@
 FROM ubuntu:jammy@sha256:e6173d4dc55e76b87c4af8db8821b1feae4146dd47341e4d431118c7dd060a74
 
 RUN \
-  --mount=type=cache,target=/var/lib/apt/lists \
-  --mount=type=cache,target=/var/cache/apt \
+  --mount=type=tmpfs,target=/var/lib/apt/lists \
+  --mount=type=tmpfs,target=/var/cache/apt \
   <<_EOFEOF_
 #!/bin/bash
     set -eu
@@ -35,8 +35,8 @@ _EOFEOF_
 ARG TOOLSET_JSON_URL=https://github.com/actions/runner-images/raw/33875804693d2c58977c82f70dcb7a10dafad9d7/images/ubuntu/toolsets/toolset-2204.json
 
 RUN \
-  --mount=type=cache,target=/var/lib/apt/lists \
-  --mount=type=cache,target=/var/cache/apt \
+  --mount=type=tmpfs,target=/var/lib/apt/lists \
+  --mount=type=tmpfs,target=/var/cache/apt \
   --mount=type=tmpfs,target=/tmp/tmp/ \
   <<_EOFEOF_
 #!/bin/bash
@@ -90,8 +90,8 @@ _EOFEOF_
 ################################
 
 RUN \
-  --mount=type=cache,target=/var/lib/apt/lists \
-  --mount=type=cache,target=/var/cache/apt \
+  --mount=type=tmpfs,target=/var/lib/apt/lists \
+  --mount=type=tmpfs,target=/var/cache/apt \
   --mount=type=tmpfs,target=/tmp/tmp/ \
   <<_EOFEOF_
 #!/bin/bash
@@ -114,8 +114,8 @@ _EOFEOF_
 ################################
 
 RUN \
-  --mount=type=cache,target=/var/lib/apt/lists \
-  --mount=type=cache,target=/var/cache/apt \
+  --mount=type=tmpfs,target=/var/lib/apt/lists \
+  --mount=type=tmpfs,target=/var/cache/apt \
   <<_EOFEOF_
 #!/bin/bash
     set -eu

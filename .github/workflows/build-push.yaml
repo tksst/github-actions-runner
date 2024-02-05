@@ -27,6 +27,11 @@ jobs:
       packages: write
 
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@6705383eabd01833acfe8412ec697384830e1455 # v1.8.7
+
+      - uses: Kesin11/actions-timeline@40b912d44677e158feec8015d092b5428f9c8247 # v2.0.2
+
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:

@@ -76,9 +76,3 @@ jobs:
           outputs: ${{ env.PUSH == 'true' && 'type=registry' || 'type=oci,dest=/tmp/image.tar' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
-        if: env.PUSH != 'true'
-        with:
-          name: OCI image
-          path: /tmp/image.tar

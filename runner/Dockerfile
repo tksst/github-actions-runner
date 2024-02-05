@@ -124,7 +124,7 @@ RUN \
 
     apt-get update
     apt-get install -y --no-install-recommends openjdk-11-jdk-headless
-    
+
 _EOFEOF_
 
 USER user
@@ -163,7 +163,7 @@ RUN \
     set +o pipefail
     yes | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --licenses
     set -o pipefail
-    
+
 _EOFEOF_
 
 COPY ./init.sh /init.sh

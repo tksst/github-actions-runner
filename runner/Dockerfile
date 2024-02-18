@@ -160,7 +160,7 @@ _EOFEOF_
 
 USER root
 
-ARG RUNNER_VERSION=v2.312.0
+ARG RUNNER_VERSION=v2.313.0
 
 RUN \
   --mount=type=tmpfs,target=/var/lib/apt/lists \

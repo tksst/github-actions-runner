@@ -1,4 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>tksst/renovate-config"]
+  "extends": ["github>tksst/renovate-config"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch" : ["Dockerfile"],
+      "matchStrings" : [
+        "\\nARG RUNNER_VERSION=(?<currentValue>.*?)\\n"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "actions/runner"
+    }
+  ]
 }

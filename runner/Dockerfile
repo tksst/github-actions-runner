@@ -160,7 +160,7 @@ _EOFEOF_
 
 USER root
 
-ARG RUNNER_VERSION=2.312.0
+ARG RUNNER_VERSION=v2.312.0
 
 RUN \
   --mount=type=tmpfs,target=/var/lib/apt/lists \
@@ -173,7 +173,7 @@ RUN \
 
     mkdir /actions-runner
     cd /actions-runner
-    curl -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz | tar -xzf -
+    curl -L https://github.com/actions/runner/releases/download/${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION#v}.tar.gz | tar -xzf -
 
     ./bin/installdependencies.sh
 

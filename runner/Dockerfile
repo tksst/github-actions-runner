@@ -19,16 +19,8 @@ RUN \
 
     apt-get update
 
-    # actions-runnerインストールに必要
+    # 様々なインストールに必要
     apt-get -y --no-install-recommends install curl ca-certificates
-
-    mkdir /actions-runner
-    cd /actions-runner
-    curl -L https://github.com/actions/runner/releases/download/v2.312.0/actions-runner-linux-x64-2.312.0.tar.gz | tar -xzf -
-
-    ./bin/installdependencies.sh
-
-    chown -R user:user /actions-runner
 
 _EOFEOF_
 
@@ -165,6 +157,31 @@ RUN \
     set -o pipefail
 
 _EOFEOF_
+
+USER root
+
+ARG RUNNER_VERSION=2.312.0
+
+RUN \
+  --mount=type=tmpfs,target=/var/lib/apt/lists \
+  --mount=type=tmpfs,target=/var/cache/apt \
+  <<_EOFEOF_
+#!/bin/bash
+    set -eu
+    set -o pipefail
+    set -o posix
+
+    mkdir /actions-runner
+    cd /actions-runner
+    curl -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz | tar -xzf -
+
+    ./bin/installdependencies.sh
+
+    chown -R user:user /actions-runner
+
+_EOFEOF_
+
+USER user
 
 COPY ./init.sh /init.sh
 

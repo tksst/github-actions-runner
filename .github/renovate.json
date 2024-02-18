@@ -11,5 +11,20 @@
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "actions/runner"
     }
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["dockerfile"],
+      "matchPackageNames": ["ubuntu"],
+      "matchDepTypes": ["final"],
+      "matchUpdateTypes": ["digest"],
+      "automerge": true
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "matchPackageNames": ["actions/runner"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    }
   ]
 }

@@ -48,7 +48,7 @@ RUN \
     # https://github.com/actions/runner-images/blob/5d40b1e2130ee3081ebf2a5f0b75854e3a4aff2e/images/ubuntu/scripts/build/apt-common.sh
     # https://github.com/actions/runner-images/blob/1bd9214f41fdc2aa56e86e0b4043e4364fa51497/images/ubuntu/scripts/build/install-apt-vital.sh
 
-    jq '.apt.common_packages[]' < "$tool_json" | xargs apt-get install -y --no-install-recommends
+    jq '.apt.common_packages[]' < "$tool_json" | grep -v "lib32z1" | xargs apt-get install -y --no-install-recommends
     jq '.apt.cmd_packages[]' < "$tool_json" | xargs apt-get install -y --no-install-recommends
     jq '.apt.vital_packages[]' < "$tool_json" | xargs apt-get install -y --no-install-recommends
 
@@ -173,7 +173,21 @@ RUN \
 
     mkdir /actions-runner
     cd /actions-runner
-    curl -fsSL https://github.com/actions/runner/releases/download/${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION#v}.tar.gz | tar -xzf -
+
+    echo "arch command output: $( arch )"
+
+    case $(arch) in
+    "x86_64")
+      package_arch=x64;;
+    "aarch64")
+      package_arch=arm64;;
+    "armv7l")
+      package_arch=arm;;
+    *)
+      package_arch=$(arch);;
+    esac
+
+    curl -fsSL https://github.com/actions/runner/releases/download/${RUNNER_VERSION}/actions-runner-linux-${package_arch}-${RUNNER_VERSION#v}.tar.gz | tar -xzf -
 
     ./bin/installdependencies.sh
 

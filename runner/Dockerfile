@@ -94,7 +94,7 @@ RUN \
     tool_json=/tmp/tmp/toolset-2204.json
     n=/tmp/tmp/n
 
-    curl -L "$TOOLSET_JSON_URL" -o "$tool_json"
+    curl -fsSL "$TOOLSET_JSON_URL" -o "$tool_json"
     
     curl -fsSL https://raw.githubusercontent.com/tj/n/master/bin/n -o "$n"
     bash "$n" $( jq -r '.node.default' < "$tool_json" )
@@ -173,7 +173,7 @@ RUN \
 
     mkdir /actions-runner
     cd /actions-runner
-    curl -L https://github.com/actions/runner/releases/download/${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION#v}.tar.gz | tar -xzf -
+    curl -fsSL https://github.com/actions/runner/releases/download/${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION#v}.tar.gz | tar -xzf -
 
     ./bin/installdependencies.sh
 

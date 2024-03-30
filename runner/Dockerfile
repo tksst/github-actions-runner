@@ -18,7 +18,7 @@ RUN \
     apt-get update
 
     # 様々なインストールに必要
-    apt-get -y --no-install-recommends install curl ca-certificates
+    apt-get -y --no-install-recommends install wget curl ca-certificates
 
 _EOFEOF_
 
@@ -27,7 +27,7 @@ ARG TOOLSET_JSON_URL=https://github.com/actions/runner-images/raw/33875804693d2c
 RUN \
   --mount=type=cache,target=/var/lib/apt/lists \
   --mount=type=cache,target=/var/cache/apt \
-  --mount=type=tmpfs,target=/tmp/tmp/ \
+  --mount=type=cache,target=/tmp/tmp/ \
   <<_EOFEOF_
 #!/bin/bash
     set -eu
@@ -36,9 +36,6 @@ RUN \
 
     tool_json=/tmp/tmp/toolset-2204.json
 
-    apt-get update
-    apt-get install -y software-properties-common jq unzip
-
     curl -fsSL "$TOOLSET_JSON_URL" > "$tool_json"
 
     export DEBIAN_FRONTEND=noninteractive
@@ -46,12 +43,14 @@ RUN \
     # https://github.com/actions/runner-images/blob/5d40b1e2130ee3081ebf2a5f0b75854e3a4aff2e/images/ubuntu/scripts/build/apt-common.sh
     # https://github.com/actions/runner-images/blob/1bd9214f41fdc2aa56e86e0b4043e4364fa51497/images/ubuntu/scripts/build/install-apt-vital.sh
 
+    apt-get install -y jq
     jq '.apt.common_packages[]' < "$tool_json" | grep -v "lib32z1" | xargs apt-get install -y --no-install-recommends
     jq '.apt.cmd_packages[]' < "$tool_json" | xargs apt-get install -y --no-install-recommends
     jq '.apt.vital_packages[]' < "$tool_json" | xargs apt-get install -y --no-install-recommends
 
 
     # Git
+    apt-get install -y software-properties-common
     add-apt-repository -y ppa:git-core/ppa
     curl -fsSL https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
     apt-get update
@@ -82,7 +81,7 @@ _EOFEOF_
 RUN \
   --mount=type=cache,target=/var/lib/apt/lists \
   --mount=type=cache,target=/var/cache/apt \
-  --mount=type=tmpfs,target=/tmp/tmp/ \
+  --mount=type=cache,target=/tmp/tmp/ \
   <<_EOFEOF_
 #!/bin/bash
     set -eu
@@ -91,8 +90,6 @@ RUN \
 
     tool_json=/tmp/tmp/toolset-2204.json
     n=/tmp/tmp/n
-
-    curl -fsSL "$TOOLSET_JSON_URL" -o "$tool_json"
     
     curl -fsSL https://raw.githubusercontent.com/tj/n/master/bin/n -o "$n"
     bash "$n" $( jq -r '.node.default' < "$tool_json" )
@@ -112,12 +109,9 @@ RUN \
     set -o pipefail
     set -o posix
 
-    apt-get update
     apt-get install -y --no-install-recommends openjdk-11-jdk-headless
 
 _EOFEOF_
-
-USER user
 
 ################################
 # Android Command-line tools
@@ -127,7 +121,7 @@ ENV ANDROID_SDK_ROOT /home/user/android-sdk
 ENV ANDROID_HOME ${ANDROID_SDK_ROOT}
 
 RUN \
-  --mount=type=tmpfs,target=/tmp/tmp/ \
+  --mount=type=cache,target=/tmp/tmp/ \
   <<_EOFEOF_
 #!/bin/bash
     set -eu
@@ -135,17 +129,33 @@ RUN \
     set -o posix
 
     tool_json=/tmp/tmp/toolset-2204.json
-    tmp_cmdline_tools=/tmp/tmp/cmdline-tools.zip
-
-    curl -fsSL "$TOOLSET_JSON_URL" -o "$tool_json"
 
     cmdlineToolsVersion=$( jq -r '.android."cmdline-tools"' < "$tool_json" )
 
-    curl -fsSL -o "$tmp_cmdline_tools" "https://dl.google.com/android/repository/${cmdlineToolsVersion}"
+    cd /tmp/tmp/
+    mkdir -p android-sdk
+    cd android-sdk
 
+    # purge old caches
+    if [[ ! -f $cmdlineToolsVersion ]]; then
+      rm -rf *
+    fi
+
+    wget --no-verbose --timestamping "https://dl.google.com/android/repository/${cmdlineToolsVersion}"
     mkdir -p "$ANDROID_SDK_ROOT"
+    unzip -qq "$cmdlineToolsVersion" -d "${ANDROID_SDK_ROOT}/cmdline-tools"
+    chown -R user:user "$ANDROID_SDK_ROOT"
 
-    unzip -qq "$tmp_cmdline_tools" -d "${ANDROID_SDK_ROOT}/cmdline-tools"
+_EOFEOF_
+
+USER user
+
+RUN \
+  <<_EOFEOF_
+#!/bin/bash
+    set -eu
+    set -o pipefail
+    set -o posix
 
     # Command line tools need to be placed in ${ANDROID_SDK_ROOT}/sdk/cmdline-tools/latest to determine SDK root
     mv "${ANDROID_SDK_ROOT}/cmdline-tools/cmdline-tools" "${ANDROID_SDK_ROOT}/cmdline-tools/latest"
@@ -163,14 +173,12 @@ ARG RUNNER_VERSION=v2.315.0
 RUN \
   --mount=type=cache,target=/var/lib/apt/lists \
   --mount=type=cache,target=/var/cache/apt \
+  --mount=type=cache,target=/tmp/tmp/ \
   <<_EOFEOF_
 #!/bin/bash
     set -eu
     set -o pipefail
     set -o posix
-
-    mkdir /actions-runner
-    cd /actions-runner
 
     echo "arch command output: $( arch )"
 
@@ -185,7 +193,23 @@ RUN \
       package_arch=$(arch);;
     esac
 
-    curl -fsSL https://github.com/actions/runner/releases/download/${RUNNER_VERSION}/actions-runner-linux-${package_arch}-${RUNNER_VERSION#v}.tar.gz | tar -xzf -
+    cd /tmp/tmp
+    mkdir -p actions-runner
+    cd actions-runner
+
+    file=actions-runner-linux-${package_arch}-${RUNNER_VERSION#v}.tar.gz
+
+    # purge old caches
+    if [[ ! -e $file ]]; then
+      rm -rf *
+    fi
+
+    wget --no-verbose --timestamping "https://github.com/actions/runner/releases/download/${RUNNER_VERSION}/${file}"
+
+    mkdir /actions-runner
+    cd /actions-runner
+
+    tar -xf "/tmp/tmp/actions-runner/$file"
 
     ./bin/installdependencies.sh
 

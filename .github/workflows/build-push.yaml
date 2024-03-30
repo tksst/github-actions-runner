@@ -17,10 +17,58 @@ env:
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}/${{ inputs.image-name }}
-  PUSH: ${{ github.event_name != 'pull_request' && ( github.ref_name == github.event.repository.default_branch || github.ref_type == 'tag' ) }}
 
 jobs:
-  build-push:
+  meta-data:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    outputs:
+      tags: ${{ steps.docker-metadata.outputs.tags }}
+      labels: ${{ steps.docker-metadata.outputs.labels }}
+      build-cache-name-amd64: ${{ steps.generate-build-cache-names.outputs.build-cache-name-amd64 }}
+      build-cache-name-arm64: ${{ steps.generate-build-cache-names.outputs.build-cache-name-arm64 }}
+      build-cache-name-armv7: ${{ steps.generate-build-cache-names.outputs.build-cache-name-armv7 }}
+      build-cache-pkg-name:  ${{ steps.generate-build-cache-names.outputs.build-cache-pkg-name }}
+      # デフォルトブランチかタグの時のみPUSHする
+      push: ${{ github.event_name != 'pull_request' && ( github.ref_name == github.event.repository.default_branch || github.ref_type == 'tag' ) }}
+
+    steps:
+      - id: generate-build-cache-names
+        run: |
+          set -eu
+          set -o pipefail
+          set -o posix
+          
+          x="${IMAGE_NAME}/build-cache-${run_number}"
+
+          (
+            echo "build-cache-name-amd64=${REGISTRY}/${x}:amd64"
+            echo "build-cache-name-arm64=${REGISTRY}/${x}:arm64"
+            echo "build-cache-name-armv7=${REGISTRY}/${x}:armv7"
+            echo "build-cache-pkg-name=${x#"${repository_owner}"/}"
+          ) | tee -a "$GITHUB_OUTPUT"
+        env:
+          run_number: ${{ github.run_number }}
+          repository_owner: ${{ github.repository_owner }}
+
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker metadata
+        id: docker-metadata
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ github.event.repository.default_branch }},enable={{is_default_branch}}
+            type=ref,priority=100,event=tag
+            type=sha,priority=400,format=short
+            type=sha,priority=500,format=short,suffix=-{{date 'YYYYMMDDTHHmmss[Z]'}}
+
+  build-arm64:
+    needs:
+      - meta-data
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -29,53 +77,144 @@ jobs:
     steps:
       - name: Collect Workflow Telemetry
         uses: catchpoint/workflow-telemetry-action@94c3c3d9567a0205de6da68a76c428ce4e769af1 # v2.0.0
-
-      - uses: Kesin11/actions-timeline@40b912d44677e158feec8015d092b5428f9c8247 # v2.0.2
+        with:
+          # Set to true to publish the results as comment to the PR (applicable if workflow run is triggered by PR).
+          comment_on_pr: false
 
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - uses: ./.github/actions/build/
         with:
-          show-progress: false
+          push: ${{ needs.meta-data.outputs.push }}
+          arch: linux/arm64
+          registry: ${{ env.REGISTRY }}
+          context-directory: ${{ inputs.context-directory }}
+          build-cache-name: ${{ needs.meta-data.outputs.build-cache-name-arm64 }}
+          labels: ${{ needs.meta-data.outputs.labels }}
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
+  build-armv7:
+    needs:
+      - meta-data
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
 
-      - name: Setup Docker buildx
-        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
+    steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@94c3c3d9567a0205de6da68a76c428ce4e769af1 # v2.0.0
+        with:
+          # Set to true to publish the results as comment to the PR (applicable if workflow run is triggered by PR).
+          comment_on_pr: false
+
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - uses: ./.github/actions/build/
+        with:
+          push: ${{ needs.meta-data.outputs.push }}
+          arch: linux/arm/v7
+          registry: ${{ env.REGISTRY }}
+          context-directory: ${{ inputs.context-directory }}
+          build-cache-name: ${{ needs.meta-data.outputs.build-cache-name-armv7 }}
+          labels: ${{ needs.meta-data.outputs.labels }}
+
+  build-amd64:
+    needs:
+      - meta-data
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@94c3c3d9567a0205de6da68a76c428ce4e769af1 # v2.0.0
+        with:
+          # Set to true to publish the results as comment to the PR (applicable if workflow run is triggered by PR).
+          comment_on_pr: false
+
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - uses: ./.github/actions/build/
+        with:
+          push: ${{ needs.meta-data.outputs.push }}
+          arch: linux/amd64
+          registry: ${{ env.REGISTRY }}
+          context-directory: ${{ inputs.context-directory }}
+          build-cache-name: ${{ needs.meta-data.outputs.build-cache-name-amd64 }}
+          labels: ${{ needs.meta-data.outputs.labels }}
+
+  combine-images:
+    runs-on: ubuntu-latest
+    needs:
+      - meta-data
+      - build-amd64
+      - build-arm64
+      - build-armv7
+    permissions:
+      contents: read
+      packages: write
+    if: needs.meta-data.outputs.push == 'true'
+    steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@94c3c3d9567a0205de6da68a76c428ce4e769af1 # v2.0.0
+        with:
+          # Set to true to publish the results as comment to the PR (applicable if workflow run is triggered by PR).
+          comment_on_pr: false
 
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
       - name: Log into registry ${{ env.REGISTRY }}
-        if: env.PUSH == 'true'
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Extract metadata (tags, labels) for Docker
-      # https://github.com/docker/metadata-action
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@dbef88086f6cef02e264edb7dbf63250c17cef6c # v5.5.0
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=ref,priority=100,event=tag
-            type=sha,priority=400,format=short
-            type=sha,priority=500,format=short,suffix=-{{date 'YYYYMMDDTHHmmss[Z]'}}
+      - name: combine images
+        run: |
+          set -eu
+          set -o pipefail
+          set -o posix
 
-      # Build and push Docker image with Buildx (don't push on PR)
-      # https://github.com/docker/build-push-action
-      - name: Build and push Docker image
-        id: build-and-push
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
+          for a in $multiarch_image; do
+            docker buildx imagetools create -t "$a" "$amd64_image" "$arm64_image" "$armv7_image"
+            echo
+          done
+        env:
+          amd64_image: ${{ needs.meta-data.outputs.build-cache-name-amd64 }}
+          arm64_image: ${{ needs.meta-data.outputs.build-cache-name-arm64 }}
+          armv7_image: ${{ needs.meta-data.outputs.build-cache-name-armv7 }}
+          multiarch_image: ${{ needs.meta-data.outputs.tags }}
+
+
+  fix-up:
+    needs:
+      - meta-data
+      - build-amd64
+      - build-arm64
+      - build-armv7
+      - combine-images
+    # Runs even when the previous job was in error
+    if: ${{ always() }}
+    runs-on: ubuntu-22.04
+    permissions:
+      actions: read
+      contents: read
+      packages: write
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5.0.0
+        continue-on-error: true
+        if: needs.meta-data.outputs.push == 'true'
         with:
-          context: ./${{ inputs.context-directory }}
-          platforms: linux/amd64,linux/arm64/v8,linux/arm/v7
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          outputs: ${{ env.PUSH == 'true' && 'type=registry' || 'type=oci,dest=/tmp/image.tar' }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          package-name: ${{ needs.meta-data.outputs.build-cache-pkg-name }}
+          package-type: "container"
+          min-versions-to-keep: 0
+
+      - uses: Kesin11/actions-timeline@b03a6aa289adef5534c84ccb6fbef7c975973574 # v2.1.0
+        continue-on-error: true

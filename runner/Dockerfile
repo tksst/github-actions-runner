@@ -1,12 +1,16 @@
 # syntax=docker/dockerfile:1.4.1
 FROM ubuntu:jammy@sha256:77906da86b60585ce12215807090eb327e7386c8fafb5402369e421f44eff17e
 
+ARG TOOLSET_JSON_DIGEST=33875804693d2c58977c82f70dcb7a10dafad9d7
+
 RUN \
   --mount=type=cache,target=/var/lib/apt/lists \
   --mount=type=cache,target=/var/cache/apt \
+  --mount=type=cache,target=/tmp/tmp/ \
   <<_EOFEOF_
 #!/bin/bash
     set -eu
+    set -o pipefail
     set -o posix
 
     # /etc/apt/apt.conf.d/docker-clean disables /var/cache/apt/archives caching
@@ -19,20 +23,6 @@ RUN \
 
     # 様々なインストールに必要
     apt-get -y --no-install-recommends install wget curl ca-certificates
-
-_EOFEOF_
-
-ARG TOOLSET_JSON_DIGEST=33875804693d2c58977c82f70dcb7a10dafad9d7
-
-RUN \
-  --mount=type=cache,target=/var/lib/apt/lists \
-  --mount=type=cache,target=/var/cache/apt \
-  --mount=type=cache,target=/tmp/tmp/ \
-  <<_EOFEOF_
-#!/bin/bash
-    set -eu
-    set -o pipefail
-    set -o posix
 
     tool_json=/tmp/tmp/toolset-2204.json
 
@@ -72,6 +62,12 @@ EOFXXX
     apt-get update
     apt-get install -y gh
 
+################################
+# OpenJDK
+################################
+
+    apt-get install -y --no-install-recommends openjdk-11-jdk-headless
+
 _EOFEOF_
 
 ################################
@@ -93,23 +89,6 @@ RUN \
     
     curl -fsSL https://raw.githubusercontent.com/tj/n/master/bin/n -o "$n"
     bash "$n" $( jq -r '.node.default' < "$tool_json" )
-
-_EOFEOF_
-
-################################
-# OpenJDK
-################################
-
-RUN \
-  --mount=type=cache,target=/var/lib/apt/lists \
-  --mount=type=cache,target=/var/cache/apt \
-  <<_EOFEOF_
-#!/bin/bash
-    set -eu
-    set -o pipefail
-    set -o posix
-
-    apt-get install -y --no-install-recommends openjdk-11-jdk-headless
 
 _EOFEOF_
 

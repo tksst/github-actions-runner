@@ -13,8 +13,6 @@ RUN \
     # so disabled temporarily
     mv /etc/apt/apt.conf.d/docker-clean /
 
-    yes | unminimize
-
     useradd -m -s /usr/bin/bash user
 
     apt-get update

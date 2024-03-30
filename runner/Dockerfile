@@ -22,7 +22,7 @@ RUN \
 
 _EOFEOF_
 
-ARG TOOLSET_JSON_URL=https://github.com/actions/runner-images/raw/33875804693d2c58977c82f70dcb7a10dafad9d7/images/ubuntu/toolsets/toolset-2204.json
+ARG TOOLSET_JSON_DIGEST=33875804693d2c58977c82f70dcb7a10dafad9d7
 
 RUN \
   --mount=type=cache,target=/var/lib/apt/lists \
@@ -36,7 +36,7 @@ RUN \
 
     tool_json=/tmp/tmp/toolset-2204.json
 
-    curl -fsSL "$TOOLSET_JSON_URL" > "$tool_json"
+    curl -fsSL "https://github.com/actions/runner-images/raw/${TOOLSET_JSON_DIGEST}/images/ubuntu/toolsets/toolset-2204.json" > "$tool_json"
 
     export DEBIAN_FRONTEND=noninteractive
 

@@ -20,8 +20,9 @@
       "customType": "regex",
       "fileMatch" : ["Dockerfile"],
       "matchStrings" : [
-        "\\nARG TOOLSET_JSON_DIGEST=(?<currentValue>.*?)\\n"
+        "\\nARG TOOLSET_JSON_DIGEST=(?<currentDigest>.*?)\\n"
       ],
+      "currentValueTemplate": "main",
       "versioningTemplate": "git",
       "datasourceTemplate": "custom.github-actions-runner-images",
       "depNameTemplate": "images/ubuntu/toolsets/toolset-2204.json"

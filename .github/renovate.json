@@ -25,7 +25,8 @@
       "currentValueTemplate": "main",
       "versioningTemplate": "git",
       "datasourceTemplate": "custom.github-actions-runner-images",
-      "depNameTemplate": "images/ubuntu/toolsets/toolset-2204.json"
+      "depNameTemplate": "runner-images",
+      "packageNameTemplate": "https://github.com/actions/runner-images.git"
     }
   ],
   "packageRules": [

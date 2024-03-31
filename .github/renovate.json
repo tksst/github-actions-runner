@@ -10,16 +10,6 @@
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "actions/runner"
-    },
-    {
-      "customType": "regex",
-      "fileMatch" : ["Dockerfile"],
-      "matchStrings" : [
-        "\\nARG TOOLSET_JSON_DIGEST=(?<currentDigest>.*?)\\n"
-      ],
-      "datasourceTemplate": "git-refs",
-      "currentValueTemplate": "main",
-      "depNameTemplate": "https://github.com/actions/runner-images.git"
     }
   ],
   "packageRules": [

@@ -3,7 +3,7 @@
   "extends": ["github>tksst/renovate-config"],
   "customDatasources": {
     "github-actions-runner-images": {
-      "defaultRegistryUrlTemplate": "https://github.com/tksst/github-actions-runner/raw/toolset-hash-mirror/toolset-hash.txt"
+      "defaultRegistryUrlTemplate": "https://github.com/tksst/github-actions-runner/raw/toolset-hash-mirror/toolset-hash.json"
     }
   },
   "customManagers": [

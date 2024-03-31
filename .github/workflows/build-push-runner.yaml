@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - "runner/**"
+    branches-ignore:
+      - toolset-hash-mirror
   pull_request:
     paths:
       - "runner/**"

@@ -1,6 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["github>tksst/renovate-config"],
+  "customDatasources": {
+    "github-actions-runner-images": {
+      "defaultRegistryUrlTemplate": "https://github.com/tksst/github-actions-runner/raw/toolset-hash-mirror/toolset-hash.txt",
+      "format":"plain"
+    }
+  },
   "customManagers": [
     {
       "customType": "regex",
@@ -15,11 +21,11 @@
       "customType": "regex",
       "fileMatch" : ["Dockerfile"],
       "matchStrings" : [
-        "\\nARG TOOLSET_JSON_DIGEST=(?<currentDigest>.*?)\\n"
+        "\\nARG TOOLSET_JSON_DIGEST=(?<currentValue>.*?)\\n"
       ],
-      "datasourceTemplate": "git-refs",
-      "currentValueTemplate": "main",
-      "depNameTemplate": "https://github.com/actions/runner-images.git"
+      "versioningTemplate": "git",
+      "datasourceTemplate": "custom.github-actions-runner-images",
+      "depNameTemplate": "images/ubuntu/toolsets/toolset-2204.json"
     }
   ],
   "packageRules": [

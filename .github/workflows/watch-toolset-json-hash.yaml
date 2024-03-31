@@ -1,0 +1,37 @@
+name: watch toolset-2204.json hash
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  watch-hash:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: toolset-hash-mirror
+
+      - run: |
+          set -u
+          set -o posix
+          set -x
+
+          file=toolset-hash.txt
+
+          curl -fsSL "https://api.github.com/repos/actions/runner-images/commits?per_page=1&path=images/ubuntu/toolsets/toolset-2204.json" | jq -r '.[0].sha' > "$file"
+
+          git add --intent-to-add  "$file"
+
+          if ! git diff --exit-code --quiet; then
+            git add "$file"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git config user.name "github-actions[bot]"
+            git commit -m "auto commit"
+            git push
+          fi

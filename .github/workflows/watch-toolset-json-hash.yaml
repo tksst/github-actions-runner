@@ -24,7 +24,7 @@ jobs:
 
           file=toolset-hash.json
 
-          curl -fsSL "https://api.github.com/repos/actions/runner-images/commits?per_page=1&path=images/ubuntu/toolsets/toolset-2204.json" | jq '{ releases:[ { version:.[0].sha }]}' > "$file"
+          curl -fsSL "https://api.github.com/repos/actions/runner-images/commits?per_page=1&path=images/ubuntu/toolsets/toolset-2204.json" | jq '{ releases:[ { version:"main", gitRef:"main", newDigest:.[0].sha, }]}' > "$file"
 
           git add --intent-to-add  "$file"
 

@@ -147,7 +147,7 @@ _EOFEOF_
 
 USER root
 
-ARG RUNNER_VERSION=v2.316.1
+ARG RUNNER_VERSION=v2.317.0
 
 RUN \
   --mount=type=cache,target=/var/lib/apt/lists \

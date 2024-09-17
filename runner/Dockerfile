@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.4.1
-FROM ubuntu:jammy@sha256:adbb90115a21969d2fe6fa7f9af4253e16d45f8d4c1e930182610c4731962658
+FROM ubuntu:jammy@sha256:58b87898e82351c6cf9cf5b9f3c20257bb9e2dcf33af051e12ce532d7f94e3fe
 
 ARG TOOLSET_JSON_DIGEST=33875804693d2c58977c82f70dcb7a10dafad9d7
 

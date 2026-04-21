@@ -216,5 +216,5 @@ jobs:
           package-type: "container"
           min-versions-to-keep: 0
 
-      - uses: Kesin11/actions-timeline@b03a6aa289adef5534c84ccb6fbef7c975973574 # v2.1.0
+      - uses: Kesin11/actions-timeline@44c9c178ffb2fb1d9859614a3ffa79ccfb77565e # v3.1
         continue-on-error: true

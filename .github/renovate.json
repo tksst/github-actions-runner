@@ -1,11 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>tksst/renovate-config"],
+  "extends": [
+    "github>tksst/renovate-config"
+  ],
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch" : ["Dockerfile"],
-      "matchStrings" : [
+      "managerFilePatterns": [
+        "/Dockerfile/"
+      ],
+      "matchStrings": [
         "\\nARG RUNNER_VERSION=(?<currentValue>.*?)\\n"
       ],
       "datasourceTemplate": "github-releases",
@@ -14,16 +18,31 @@
   ],
   "packageRules": [
     {
-      "matchManagers": ["dockerfile"],
-      "matchPackageNames": ["ubuntu"],
-      "matchDepTypes": ["final"],
-      "matchUpdateTypes": ["digest"],
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "matchPackageNames": [
+        "ubuntu"
+      ],
+      "matchDepTypes": [
+        "final"
+      ],
+      "matchUpdateTypes": [
+        "digest"
+      ],
       "automerge": true
     },
     {
-      "matchManagers": ["custom.regex"],
-      "matchPackageNames": ["actions/runner"],
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchPackageNames": [
+        "actions/runner"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
       "automerge": true
     }
   ]

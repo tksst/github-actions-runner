@@ -168,7 +168,7 @@ jobs:
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
       - name: Log into registry ${{ env.REGISTRY }}
-        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -216,5 +216,5 @@ jobs:
           package-type: "container"
           min-versions-to-keep: 0
 
-      - uses: Kesin11/actions-timeline@b03a6aa289adef5534c84ccb6fbef7c975973574 # v2.1.0
+      - uses: Kesin11/actions-timeline@d547cc51bd6e8016ac50219eeb29a9eb385a2546 # v4.0.0
         continue-on-error: true
